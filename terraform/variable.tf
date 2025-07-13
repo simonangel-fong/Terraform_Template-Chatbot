@@ -10,6 +10,28 @@ variable "app_domain" {
   description = ""
 }
 
+variable "app_subdomain" {
+  description = ""
+}
+
+locals {
+  app_address = "${var.app_subdomain}.${var.app_domain}"
+}
+
+# ########################################
+# Cloudflare
+# ########################################
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone id"
+  type        = string
+}
 
 ##############################
 # AWS provider
@@ -37,4 +59,11 @@ variable "aws_lambda_function_runtime" {
 variable "aws_apigw_path" {
   description = ""
   default     = "agent"
+}
+
+##############################
+# AWS ACM
+##############################
+variable "aws_cert_arn" {
+  description = ""
 }

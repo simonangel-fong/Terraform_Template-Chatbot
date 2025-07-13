@@ -115,15 +115,17 @@ resource "aws_api_gateway_stage" "api_stage" {
 # API Gateway Customer Domain Name: mapping
 # ###############################
 
-data "aws_api_gateway_domain_name" "api_domain" {
-  domain_name = var.app_domain
+resource "aws_api_gateway_domain_name" "api_domain" {
+  certificate_arn = var.aws_cert_arn
+  domain_name     = local.app_address
 }
 
 resource "aws_api_gateway_base_path_mapping" "api_domain_mapping" {
+  domain_name = aws_api_gateway_domain_name.api_domain.domain_name
   api_id      = aws_api_gateway_rest_api.rest_api.id
   stage_name  = aws_api_gateway_stage.api_stage.stage_name
-  domain_name = data.aws_api_gateway_domain_name.api_domain.domain_name
-  base_path   = var.aws_apigw_path
+  # base_path   = var.aws_apigw_path
+  base_path = ""
 
   depends_on = [aws_api_gateway_stage.api_stage]
 }

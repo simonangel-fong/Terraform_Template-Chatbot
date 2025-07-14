@@ -3,19 +3,26 @@
 ##############################
 variable "app_name" {
   description = ""
-  default     = "ai-agent"
+  default     = "chatbot"
 }
 
 variable "app_domain" {
   description = ""
 }
 
-variable "app_subdomain" {
+variable "app_subdomain_api" {
   description = ""
+  default     = "chatbot-api"
+}
+
+variable "app_subdomain_web" {
+  description = ""
+  default     = "chatbot"
 }
 
 locals {
-  app_address = "${var.app_subdomain}.${var.app_domain}"
+  app_api_address = "${var.app_subdomain_api}.${var.app_domain}"
+  app_web_address = "${var.app_subdomain_web}.${var.app_domain}"
 }
 
 # ########################################

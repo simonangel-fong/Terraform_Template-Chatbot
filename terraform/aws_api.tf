@@ -117,7 +117,7 @@ resource "aws_api_gateway_stage" "api_stage" {
 
 resource "aws_api_gateway_domain_name" "api_domain" {
   certificate_arn = var.aws_cert_arn
-  domain_name     = local.app_address
+  domain_name     = local.app_api_address
 }
 
 resource "aws_api_gateway_base_path_mapping" "api_domain_mapping" {

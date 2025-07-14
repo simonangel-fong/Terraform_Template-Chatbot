@@ -7,7 +7,15 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def lambda_handler(event, context):
+
+    cors_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Methods': 'GET,OPTIONS,POST,PUT,DELETE'
+    }
+
     client = boto3.client("bedrock-runtime", region_name="ca-central-1")
     prompt = "Who are you?"  # Default prompt
     try:
@@ -17,10 +25,10 @@ def lambda_handler(event, context):
                 body = json.loads(event['body'])
             else:
                 body = event['body']
-            
+
             # Get user_prompt from request body
             user_prompt = body.get('user_prompt', '').strip()
-            
+
             # Use user_prompt if not empty, otherwise use default
             if user_prompt:
                 prompt = user_prompt
@@ -62,12 +70,7 @@ def lambda_handler(event, context):
         # Return successful response
         return {
             'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-                'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
-            },
+            'headers': cors_headers,
             'body': json.dumps({
                 'success': True,
                 'generated_text': generated_text,
@@ -96,10 +99,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': status_code,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': cors_headers,
             'body': json.dumps({
                 'success': False,
                 'error': error_code,
@@ -111,10 +111,7 @@ def lambda_handler(event, context):
         logger.error(f"JSON decode error: {str(e)}")
         return {
             'statusCode': 400,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': cors_headers,
             'body': json.dumps({
                 'success': False,
                 'error': 'InvalidJSON',
@@ -126,10 +123,7 @@ def lambda_handler(event, context):
         logger.error(f"Unexpected error: {str(e)}")
         return {
             'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': cors_headers,  # Use consistent CORS headers
             'body': json.dumps({
                 'success': False,
                 'error': 'InternalServerError',

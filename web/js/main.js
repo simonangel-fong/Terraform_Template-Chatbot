@@ -1,5 +1,5 @@
 let chatHistory = [];
-const API_URL = "https://ai.arguswatcher.net/agent";
+const API_URL = "https://chatbot-api.arguswatcher.net/agent";
 const messagesContainer = document.getElementById("messages");
 const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
@@ -83,7 +83,7 @@ async function sendMessage() {
   showTypingIndicator();
 
   try {
-    // Call your API (replace 'my_api' with your actual API URL)
+    // Call the API with the correct endpoint
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -93,7 +93,7 @@ async function sendMessage() {
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -101,10 +101,12 @@ async function sendMessage() {
     // Hide typing indicator
     hideTypingIndicator();
 
-    // Add bot response
-    addMessage(
-      data.response || "Sorry, I encountered an error. Please try again."
-    );
+    // Check if API call was successful and extract the generated text
+    if (data.success && data.generated_text) {
+      addMessage(data.generated_text);
+    } else {
+      addMessage("Sorry, I encountered an error. Please try again.");
+    }
   } catch (error) {
     console.error("Error:", error);
     hideTypingIndicator();

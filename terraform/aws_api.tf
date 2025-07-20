@@ -33,10 +33,10 @@ resource "aws_api_gateway_deployment" "rest_api_deployment" {
   triggers = {
     redeployment = sha1(jsonencode([
       # GET /chatbot
-      aws_api_gateway_method.method_get_all.id,
-      aws_api_gateway_integration.integration_lambda_get_all.id,
-      aws_api_gateway_method_response.method_response_get_all.id,
-      aws_api_gateway_integration_response.integration_response_get_all.id,
+      aws_api_gateway_method.method_get_all,
+      aws_api_gateway_integration.integration_lambda_get_all,
+      aws_api_gateway_method_response.method_response_get_all,
+      aws_api_gateway_integration_response.integration_response_get_all,
 
       # POST /chatbot
       aws_api_gateway_method.method_post_item.id,

@@ -1,138 +1,196 @@
-// let chatHistory = [];
-// const API_URL = "https://chatbot-api.arguswatcher.net/agent";
-// const messagesContainer = document.getElementById("messages");
-// const messageInput = document.getElementById("messageInput");
-// const sendButton = document.getElementById("sendButton");
-// const typingIndicator = document.getElementById("typingIndicator");
+// Configuration
+const API_URL = "https://chatbot.arguswatcher.net/prod/chatbot";
 
-// // Auto-resize textarea
-// function autoResize(textarea) {
-//   textarea.style.height = "auto";
-//   textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
-// }
+// DOM Elements
+const messagesContainer = document.getElementById("messages");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const typingIndicator = document.getElementById("typingIndicator");
 
-// // Handle Enter key press
-// function handleKeyPress(event) {
-//   if (event.key === "Enter" && !event.shiftKey) {
-//     event.preventDefault();
-//     sendMessage();
-//   }
-// }
+// Auto-resize textarea
+function autoResize(textarea) {
+  textarea.style.height = "auto";
+  textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+}
 
-// // Send quick message
-// function sendQuickMessage(message) {
-//   messageInput.value = message;
-//   sendMessage();
-// }
+// Handle Enter key press
+function handleKeyPress(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
 
-// // Add message to chat
-// function addMessage(content, isUser = false) {
-//   const messageDiv = document.createElement("div");
-//   messageDiv.className = `message ${isUser ? "user" : "bot"}`;
+// Send quick message
+function sendQuickMessage(message) {
+  messageInput.value = message;
+  sendMessage();
+}
 
-//   const now = new Date();
-//   const timeString = now.toLocaleTimeString([], {
-//     hour: "2-digit",
-//     minute: "2-digit",
-//   });
+// Add message to chat
+function addMessage(
+  content,
+  isUser = false,
+  modelInfo = null,
+  tokenInfo = null
+) {
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message ${isUser ? "user" : "assistant"}`;
 
-//   messageDiv.innerHTML = `
-//                 <div class="message-avatar">${isUser ? "👤" : "🤖"}</div>
-//                 <div class="message-content">
-//                     ${content}
-//                     <div class="message-time">${timeString}</div>
-//                 </div>
-//             `;
+  const avatar = document.createElement("div");
+  avatar.className = "message-avatar";
+  avatar.textContent = isUser ? "👤" : "🤖";
 
-//   messagesContainer.appendChild(messageDiv);
-//   scrollToBottom();
-// }
+  const messageContent = document.createElement("div");
+  messageContent.className = "message-content";
+  messageContent.innerHTML = formatMessage(content);
 
-// // Show typing indicator
-// function showTypingIndicator() {
-//   typingIndicator.classList.add("active");
-//   scrollToBottom();
-// }
+  if (!isUser && modelInfo) {
+    const modelInfoDiv = document.createElement("div");
+    modelInfoDiv.className = "model-info";
+    modelInfoDiv.textContent = `Model: ${modelInfo}`;
+    messageContent.appendChild(modelInfoDiv);
+  }
 
-// // Hide typing indicator
-// function hideTypingIndicator() {
-//   typingIndicator.classList.remove("active");
-// }
+  if (!isUser && tokenInfo) {
+    const tokenInfoDiv = document.createElement("div");
+    tokenInfoDiv.className = "token-info";
+    tokenInfoDiv.textContent = `Input tokens: ${tokenInfo.input} | Output tokens: ${tokenInfo.output}`;
+    messageContent.appendChild(tokenInfoDiv);
+  }
 
-// // Scroll to bottom
-// function scrollToBottom() {
-//   messagesContainer.scrollTop = messagesContainer.scrollHeight;
-// }
+  messageDiv.appendChild(avatar);
+  messageDiv.appendChild(messageContent);
 
-// // Send message
-// async function sendMessage() {
-//   const message = messageInput.value.trim();
-//   if (!message) return;
+  messagesContainer.appendChild(messageDiv);
+  scrollToBottom();
+}
 
-//   // Disable send button
-//   sendButton.disabled = true;
+// Format message content
+function formatMessage(content) {
+  // Simple formatting - you can enhance this
+  return content
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(
+      /`(.*?)`/g,
+      '<code style="background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>'
+    )
+    .replace(/\n/g, "<br>");
+}
 
-//   // Add user message
-//   addMessage(message, true);
+// Show typing indicator
+function showTypingIndicator() {
+  typingIndicator.style.display = "flex";
+  scrollToBottom();
+}
 
-//   // Clear input
-//   messageInput.value = "";
-//   messageInput.style.height = "auto";
+// Hide typing indicator
+function hideTypingIndicator() {
+  typingIndicator.style.display = "none";
+}
 
-//   // Show typing indicator
-//   showTypingIndicator();
+// Scroll to bottom of messages
+function scrollToBottom() {
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-//   try {
-//     // Call the API with the correct endpoint
-//     const response = await fetch(API_URL, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ user_prompt: message }),
-//     });
+// Show error message
+function showError(message) {
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "error-message";
+  errorDiv.textContent = message;
+  messagesContainer.appendChild(errorDiv);
+  scrollToBottom();
+}
 
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
+// Send message to API
+async function sendMessage() {
+  const message = messageInput.value.trim();
+  if (!message) return;
 
-//     const data = await response.json();
+  // Disable send button and show user message
+  sendButton.disabled = true;
+  addMessage(message, true);
+  messageInput.value = "";
+  messageInput.style.height = "auto";
 
-//     // Hide typing indicator
-//     hideTypingIndicator();
+  // Show typing indicator
+  showTypingIndicator();
 
-//     // Check if API call was successful and extract the generated text
-//     if (data.success && data.generated_text) {
-//       addMessage(data.generated_text);
-//     } else {
-//       addMessage("Sorry, I encountered an error. Please try again.");
-//     }
-//   } catch (error) {
-//     console.error("Error:", error);
-//     hideTypingIndicator();
-//     addMessage(
-//       "Sorry, I'm having trouble connecting right now. Please check your connection and try again."
-//     );
-//   } finally {
-//     // Re-enable send button
-//     sendButton.disabled = false;
-//   }
-// }
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_prompt: message,
+      }),
+    });
 
-// // Initialize
-// document.addEventListener("DOMContentLoaded", function () {
-//   messageInput.focus();
+    if (!response.ok) {
+      console.log(`HTTP error! status: ${response.status}`);
+    }
 
-//   // Remove welcome message after first user interaction
-//   let firstMessage = true;
-//   messageInput.addEventListener("input", function () {
-//     if (firstMessage) {
-//       const welcomeMsg = document.querySelector(".welcome-message");
-//       if (welcomeMsg) {
-//         welcomeMsg.style.animation = "slideIn 0.3s ease-out reverse";
-//         setTimeout(() => welcomeMsg.remove(), 300);
-//       }
-//       firstMessage = false;
-//     }
-//   });
-// });
+    const data = await response.json();
+
+    // Hide typing indicator
+    hideTypingIndicator();
+
+    if (data.success) {
+      const tokenInfo = {
+        input: data.input_tokens,
+        output: data.output_tokens,
+      };
+
+      addMessage(data.generated_text, false, data.model_used, tokenInfo);
+    } else {
+      showError("Failed to get response from AI assistant");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    hideTypingIndicator();
+    showError("Connection error. Please try again.");
+  } finally {
+    sendButton.disabled = false;
+  }
+}
+
+// Event listeners
+messageInput.addEventListener("input", function () {
+  autoResize(this);
+});
+
+messageInput.addEventListener("keypress", handleKeyPress);
+sendButton.addEventListener("click", sendMessage);
+
+// Initialize
+document.addEventListener("DOMContentLoaded", function () {
+  messageInput.focus();
+
+  // Remove welcome message on first interaction
+  let firstMessage = true;
+  const originalSendMessage = sendMessage;
+  sendMessage = function () {
+    if (firstMessage) {
+      const welcomeMessage = document.querySelector(".welcome-message");
+      if (welcomeMessage) {
+        welcomeMessage.style.animation = "fadeOut 0.3s ease-out";
+        setTimeout(() => welcomeMessage.remove(), 300);
+      }
+      firstMessage = false;
+    }
+    originalSendMessage();
+  };
+});
+
+// Add fadeOut animation
+const style = document.createElement("style");
+style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
+            }
+        `;
+document.head.appendChild(style);

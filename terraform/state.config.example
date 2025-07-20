@@ -1,0 +1,3 @@
+bucket = "tf_state_bucket" 
+key    =  "bucket_key"
+region = "aws_region"

@@ -2,26 +2,24 @@
 # App level
 ##############################
 variable "app_name" {
-  description = ""
+  description = "Application name"
+  type        = string
   default     = "chatbot"
 }
 
 variable "app_domain" {
-  description = ""
-}
-
-variable "app_subdomain_api" {
-  description = ""
-  default     = "chatbot-api"
+  description = "Domain name"
+  type        = string
 }
 
 variable "app_subdomain_web" {
-  description = ""
+  description = "Subdomain name"
+  type        = string
   default     = "chatbot"
 }
 
 locals {
-  app_api_address = "${var.app_subdomain_api}.${var.app_domain}"
+  # application web address
   app_web_address = "${var.app_subdomain_web}.${var.app_domain}"
 }
 
@@ -46,17 +44,23 @@ variable "cloudflare_zone_id" {
 
 variable "aws_region" {
   description = "AWS region"
+  type        = string
+}
+
+##############################
+# AWS ACM
+##############################
+variable "aws_cert_arn" {
+  description = "ACM Certificate arn"
+  type        = string
 }
 
 ##############################
 # AWS lambda
 ##############################
-variable "aws_lambda_function_name" {
-  description = "AWS lambda function name"
-}
-
 variable "aws_lambda_function_runtime" {
   description = "AWS lambda function runtime"
+  type        = string
   default     = "python3.11"
 }
 
@@ -64,13 +68,7 @@ variable "aws_lambda_function_runtime" {
 # AWS API Gateway
 ##############################
 variable "aws_apigw_path" {
-  description = ""
+  description = "API Gateway path"
+  type        = string
   default     = "chatbot"
-}
-
-##############################
-# AWS ACM
-##############################
-variable "aws_cert_arn" {
-  description = ""
 }

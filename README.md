@@ -1,3 +1,5 @@
-# AI Agent
+# Terraform Template: AI Chatbot
 
-A repo of AI Agent.
+- An `Infrastructure as Code (IaC)` solution to build an AI chatbot using Terraform.
+
+![pic](chatbot_diagram.gif)

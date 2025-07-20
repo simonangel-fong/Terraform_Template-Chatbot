@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "web_host_bucket" {
   bucket = local.app_web_address
 
   tags = {
-    Name = "${var.app_name}-s3-bucket"
+    Name        = "${var.app_name}-s3-bucket"
     Project     = var.app_name
     Environment = "prod"
   }

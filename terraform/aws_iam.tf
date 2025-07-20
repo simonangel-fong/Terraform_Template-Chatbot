@@ -30,7 +30,7 @@ resource "aws_lambda_permission" "api_gateway_invoke_get" {
 }
 
 resource "aws_iam_role_policy" "bedrock_invoke_policy" {
-  name = "bedrock-invoke-policy"
+  name = "${var.app_name}-policy-bedrock-invoke"
   role = aws_iam_role.lambda_role.name
 
   policy = jsonencode({
@@ -54,6 +54,63 @@ resource "aws_iam_role_policy" "bedrock_invoke_policy" {
     ]
   })
 }
+
+# ###############################
+# # IAM Policy: Lambda CloudWatch Logs
+# ###############################
+resource "aws_iam_role_policy" "lambda_cloudwatch_logs" {
+  name = "${var.app_name}-policy-lambda-cloudwatch-logs"
+  role = aws_iam_role.lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "${aws_cloudwatch_log_group.lambda_logs.arn}:*"
+        ]
+      }
+    ]
+  })
+}
+
+###############################
+# IAM Role: API Gateway
+###############################
+resource "aws_iam_role" "api_gateway_role" {
+  name = "${var.app_name}-api-gateway-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "apigateway.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+###############################
+# IAM Policy: API Gateway CloudWatch Logs
+###############################
+resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch_policy" {
+  role       = aws_iam_role.api_gateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+
+
+
 
 # ###############################
 # # IAM role for Agent
@@ -88,7 +145,7 @@ resource "aws_iam_role_policy" "bedrock_invoke_policy" {
 # resource "aws_iam_role_policy" "bedrock_agent_role_policy" {
 #   name = "bedrock_agent_role_policy"
 #   role = aws_iam_role.bedrock_agent_role.name
-  
+
 #   policy = jsonencode({
 #     Version = "2012-10-17"
 #     Statement = [

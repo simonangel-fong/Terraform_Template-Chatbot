@@ -97,7 +97,7 @@ resource "aws_cloudfront_distribution" "cf_distribution" {
 
   aliases = ["${var.app_subdomain_web}.${var.app_domain}"]
 
-  price_class = "PriceClass_100"
+  price_class = "PriceClass_100" # Use only North America and Europe
 
   viewer_certificate {
     acm_certificate_arn      = var.aws_cert_arn
@@ -126,9 +126,14 @@ resource "aws_cloudfront_distribution" "cf_distribution" {
     error_caching_min_ttl = 0
   }
 
+  depends_on = [
+    aws_s3_bucket.web_host_bucket,
+    aws_api_gateway_deployment.rest_api_deployment
+  ]
+
   tags = {
-    Name        = "cloudfront-${var.app_name}"
+    Name        = "${var.app_name}-cloudfront"
+    Project     = var.app_name
     Environment = "prod"
   }
-
 }

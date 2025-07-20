@@ -11,7 +11,9 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   }
 
   tags = {
-    Name = "${var.app_name}-api-gateway"
+    Name        = "${var.app_name}-api-gateway"
+    Project     = var.app_name
+    Environment = "prod"
   }
 }
 
@@ -77,55 +79,45 @@ resource "aws_api_gateway_deployment" "rest_api_deployment" {
   ]
 }
 
+###############################
+# API Gateway stage
+###############################
+
+# account for logging
+resource "aws_api_gateway_account" "account_settings" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_role.arn
+}
+
+# stage
 resource "aws_api_gateway_stage" "api_stage" {
   stage_name    = "prod"
   deployment_id = aws_api_gateway_deployment.rest_api_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
 
-  # variables = {
-  #   lambdaAlias = "live"
-  # }
+  # Enable access logging
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
 
-  # access_log_settings {
-  #   destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
-  #   format = jsonencode({
-  #     requestId      = "$context.requestId"
-  #     ip             = "$context.identity.sourceIp"
-  #     caller         = "$context.identity.caller"
-  #     user           = "$context.identity.user"
-  #     requestTime    = "$context.requestTime"
-  #     httpMethod     = "$context.httpMethod"
-  #     resourcePath   = "$context.resourcePath"
-  #     status         = "$context.status"
-  #     protocol       = "$context.protocol"
-  #     responseLength = "$context.responseLength"
-  #   })
-  # }
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      caller         = "$context.identity.caller"
+      user           = "$context.identity.user"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      resourcePath   = "$context.resourcePath"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+    })
+  }
 
-  # xray_tracing_enabled  = true
-  # cache_cluster_enabled = false
+  xray_tracing_enabled  = true
+  cache_cluster_enabled = false
 
-  # depends_on = [
-  #   aws_cloudwatch_log_group.api_gateway_logs,
-  #   aws_api_gateway_account.account_settings
-  # ]
+  depends_on = [
+    aws_cloudwatch_log_group.api_gateway_logs,
+    aws_api_gateway_account.account_settings
+  ]
 }
 
-# # ###############################
-# # API Gateway Customer Domain Name: mapping
-# # ###############################
-
-# resource "aws_api_gateway_domain_name" "api_domain" {
-#   certificate_arn = var.aws_cert_arn
-#   domain_name     = local.app_api_address
-# }
-
-# resource "aws_api_gateway_base_path_mapping" "api_domain_mapping" {
-#   domain_name = aws_api_gateway_domain_name.api_domain.domain_name
-#   api_id      = aws_api_gateway_rest_api.rest_api.id
-#   stage_name  = aws_api_gateway_stage.api_stage.stage_name
-#   # base_path   = var.aws_apigw_path
-#   base_path = ""
-
-#   depends_on = [aws_api_gateway_stage.api_stage]
-# }

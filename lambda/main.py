@@ -108,7 +108,7 @@ def lambda_handler(event, context):
 
         # Log successful invocation
         logger.info(
-            f"Successfully generated response for prompt: {user_prompt[:50]}...")
+            f"Successfully generated response for prompt: {user_prompt}...")
 
         # Return successful response
         return {

@@ -5,7 +5,7 @@
 # method get
 resource "aws_api_gateway_method" "method_get_all" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = "GET"
 
   authorization = "NONE"
@@ -14,7 +14,7 @@ resource "aws_api_gateway_method" "method_get_all" {
 # get integrate
 resource "aws_api_gateway_integration" "integration_lambda_get_all" {
   rest_api_id             = aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.resource_agent.id
+  resource_id             = aws_api_gateway_resource.resource_chatbot.id
   http_method             = aws_api_gateway_method.method_get_all.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -24,7 +24,7 @@ resource "aws_api_gateway_integration" "integration_lambda_get_all" {
 # get response
 resource "aws_api_gateway_method_response" "method_response_get_all" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_get_all.http_method
   status_code = "200"
 
@@ -40,7 +40,7 @@ resource "aws_api_gateway_method_response" "method_response_get_all" {
 # get integation response
 resource "aws_api_gateway_integration_response" "integration_response_get_all" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_get_all.http_method
   status_code = aws_api_gateway_method_response.method_response_get_all.status_code
 
@@ -65,7 +65,7 @@ resource "aws_api_gateway_integration_response" "integration_response_get_all" {
 # method: post
 resource "aws_api_gateway_method" "method_post_item" {
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.resource_agent.id
+  resource_id   = aws_api_gateway_resource.resource_chatbot.id
   http_method   = "POST"
   authorization = "NONE"
 }
@@ -73,7 +73,7 @@ resource "aws_api_gateway_method" "method_post_item" {
 # Integration 
 resource "aws_api_gateway_integration" "integration_lambda_post_item" {
   rest_api_id             = aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.resource_agent.id
+  resource_id             = aws_api_gateway_resource.resource_chatbot.id
   http_method             = aws_api_gateway_method.method_post_item.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -83,7 +83,7 @@ resource "aws_api_gateway_integration" "integration_lambda_post_item" {
 # Method Response
 resource "aws_api_gateway_method_response" "method_response_post_item" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_post_item.http_method
   status_code = "201"
 
@@ -97,7 +97,7 @@ resource "aws_api_gateway_method_response" "method_response_post_item" {
 # integration response
 resource "aws_api_gateway_integration_response" "integration_response_post_item" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_post_item.http_method
   status_code = aws_api_gateway_method_response.method_response_post_item.status_code
 
@@ -120,7 +120,7 @@ resource "aws_api_gateway_integration_response" "integration_response_post_item"
 # option cors
 resource "aws_api_gateway_method" "method_options_cors" {
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.resource_agent.id
+  resource_id   = aws_api_gateway_resource.resource_chatbot.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
@@ -128,7 +128,7 @@ resource "aws_api_gateway_method" "method_options_cors" {
 # option integration: cors
 resource "aws_api_gateway_integration" "integration_options_cors" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_options_cors.http_method
   type        = "MOCK"
   request_templates = {
@@ -139,7 +139,7 @@ resource "aws_api_gateway_integration" "integration_options_cors" {
 # option: method response
 resource "aws_api_gateway_method_response" "method_response_options_cors" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_options_cors.http_method
   status_code = "200"
 
@@ -153,7 +153,7 @@ resource "aws_api_gateway_method_response" "method_response_options_cors" {
 # option integration_response
 resource "aws_api_gateway_integration_response" "integration_response_option_cors" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.resource_agent.id
+  resource_id = aws_api_gateway_resource.resource_chatbot.id
   http_method = aws_api_gateway_method.method_options_cors.http_method
   status_code = aws_api_gateway_method_response.method_response_options_cors.status_code
 

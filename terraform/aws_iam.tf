@@ -54,3 +54,49 @@ resource "aws_iam_role_policy" "bedrock_invoke_policy" {
     ]
   })
 }
+
+# ###############################
+# # IAM role for Agent
+# ###############################
+
+# # Agent resource role
+# resource "aws_iam_role" "bedrock_agent_role" {
+#   name = "bedrock_agent_role"
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = "sts:AssumeRole"
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "bedrock.amazonaws.com"
+#         }
+#         Condition = {
+#           StringEquals = {
+#             "aws:SourceAccount" = local.account_id
+#           }
+#           ArnLike = {
+#             "aws:SourceArn" = "arn:${local.partition}:bedrock:${local.region}:${local.account_id}:agent/*"
+#           }
+#         }
+#       }
+#     ]
+#   })
+# }
+
+# # Agent role policy
+# resource "aws_iam_role_policy" "bedrock_agent_role_policy" {
+#   name = "bedrock_agent_role_policy"
+#   role = aws_iam_role.bedrock_agent_role.name
+  
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action   = "bedrock:InvokeModel"
+#         Effect   = "Allow"
+#         Resource = data.aws_bedrock_foundation_model.this.model_arn
+#       }
+#     ]
+#   })
+# }

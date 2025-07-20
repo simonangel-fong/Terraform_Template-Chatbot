@@ -65,7 +65,7 @@ variable "aws_lambda_function_runtime" {
 ##############################
 variable "aws_apigw_path" {
   description = ""
-  default     = "agent"
+  default     = "chatbot"
 }
 
 ##############################

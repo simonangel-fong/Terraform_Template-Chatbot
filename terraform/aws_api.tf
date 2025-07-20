@@ -15,8 +15,8 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   }
 }
 
-# /agent
-resource "aws_api_gateway_resource" "resource_agent" {
+# /chatbot
+resource "aws_api_gateway_resource" "resource_chatbot" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   parent_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
   path_part   = var.aws_apigw_path
@@ -32,19 +32,19 @@ resource "aws_api_gateway_deployment" "rest_api_deployment" {
   # Redeploy when any method/integration changes
   triggers = {
     redeployment = sha1(jsonencode([
-      # GET /agent
+      # GET /chatbot
       aws_api_gateway_method.method_get_all.id,
       aws_api_gateway_integration.integration_lambda_get_all.id,
       aws_api_gateway_method_response.method_response_get_all.id,
       aws_api_gateway_integration_response.integration_response_get_all.id,
 
-      # POST /agent
+      # POST /chatbot
       aws_api_gateway_method.method_post_item.id,
       aws_api_gateway_integration.integration_lambda_post_item.id,
       aws_api_gateway_method_response.method_response_post_item.id,
       aws_api_gateway_integration_response.integration_response_post_item.id,
 
-      # OPTIONS /agent
+      # OPTIONS /chatbot
       aws_api_gateway_method.method_options_cors.id,
       aws_api_gateway_integration.integration_options_cors.id,
       aws_api_gateway_method_response.method_response_options_cors.id,
@@ -57,19 +57,19 @@ resource "aws_api_gateway_deployment" "rest_api_deployment" {
   }
 
   depends_on = [
-    # GET /agent
+    # GET /chatbot
     aws_api_gateway_method.method_get_all,
     aws_api_gateway_integration.integration_lambda_get_all,
     aws_api_gateway_method_response.method_response_get_all,
     aws_api_gateway_integration_response.integration_response_get_all,
 
-    # POST /agent
+    # POST /chatbot
     aws_api_gateway_method.method_post_item,
     aws_api_gateway_integration.integration_lambda_post_item,
     aws_api_gateway_method_response.method_response_post_item,
     aws_api_gateway_integration_response.integration_response_post_item,
 
-    # OPTIONS /agent
+    # OPTIONS /chatbot
     aws_api_gateway_method.method_options_cors,
     aws_api_gateway_integration.integration_options_cors,
     aws_api_gateway_method_response.method_response_options_cors,
@@ -111,21 +111,21 @@ resource "aws_api_gateway_stage" "api_stage" {
   # ]
 }
 
-# ###############################
-# API Gateway Customer Domain Name: mapping
-# ###############################
+# # ###############################
+# # API Gateway Customer Domain Name: mapping
+# # ###############################
 
-resource "aws_api_gateway_domain_name" "api_domain" {
-  certificate_arn = var.aws_cert_arn
-  domain_name     = local.app_api_address
-}
+# resource "aws_api_gateway_domain_name" "api_domain" {
+#   certificate_arn = var.aws_cert_arn
+#   domain_name     = local.app_api_address
+# }
 
-resource "aws_api_gateway_base_path_mapping" "api_domain_mapping" {
-  domain_name = aws_api_gateway_domain_name.api_domain.domain_name
-  api_id      = aws_api_gateway_rest_api.rest_api.id
-  stage_name  = aws_api_gateway_stage.api_stage.stage_name
-  # base_path   = var.aws_apigw_path
-  base_path = ""
+# resource "aws_api_gateway_base_path_mapping" "api_domain_mapping" {
+#   domain_name = aws_api_gateway_domain_name.api_domain.domain_name
+#   api_id      = aws_api_gateway_rest_api.rest_api.id
+#   stage_name  = aws_api_gateway_stage.api_stage.stage_name
+#   # base_path   = var.aws_apigw_path
+#   base_path = ""
 
-  depends_on = [aws_api_gateway_stage.api_stage]
-}
+#   depends_on = [aws_api_gateway_stage.api_stage]
+# }

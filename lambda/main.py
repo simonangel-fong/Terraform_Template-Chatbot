@@ -13,25 +13,68 @@ def lambda_handler(event, context):
     cors_headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-        'Access-Control-Allow-Methods': 'GET,OPTIONS,POST,PUT,DELETE'
+        'Access-Control-Allow-Methods': 'POST,OPTIONS'
     }
 
-    client = boto3.client("bedrock-runtime", region_name="ca-central-1")
-    prompt = "Who are you?"  # Default prompt
     try:
-        # API Gateway passes request body as string
-        if event.get('body'):
-            if isinstance(event['body'], str):
-                body = json.loads(event['body'])
-            else:
-                body = event['body']
+        # Check HTTP method - only allow POST
+        http_method = event.get('httpMethod', '').upper()
 
-            # Get user_prompt from request body
-            user_prompt = body.get('user_prompt', '').strip()
+        if http_method == 'OPTIONS':
+            # Handle preflight CORS request
+            return {
+                'statusCode': 200,
+                'headers': cors_headers,
+                'body': ''
+            }
 
-            # Use user_prompt if not empty, otherwise use default
-            if user_prompt:
-                prompt = user_prompt
+        if http_method != 'POST':
+            logger.warning(f"Method not allowed: {http_method}")
+            return {
+                'statusCode': 405,
+                'headers': cors_headers,
+                'body': json.dumps({
+                    'success': False,
+                    'error': 'MethodNotAllowed',
+                    'message': f'HTTP method {http_method} not allowed. Only POST requests are supported.'
+                })
+            }
+
+        # Parse request body
+        if not event.get('body'):
+            logger.error("Missing request body")
+            return {
+                'statusCode': 400,
+                'headers': cors_headers,
+                'body': json.dumps({
+                    'success': False,
+                    'error': 'MissingRequestBody',
+                    'message': 'Request body is required'
+                })
+            }
+
+        # Parse JSON body
+        if isinstance(event['body'], str):
+            body = json.loads(event['body'])
+        else:
+            body = event['body']
+
+        # Validate user_prompt is present and not empty
+        user_prompt = body.get('user_prompt', '').strip()
+        if not user_prompt:
+            logger.error("Missing or empty user_prompt")
+            return {
+                'statusCode': 400,
+                'headers': cors_headers,
+                'body': json.dumps({
+                    'success': False,
+                    'error': 'MissingUserPrompt',
+                    'message': 'user_prompt is required and cannot be empty'
+                })
+            }
+
+        # Initialize Bedrock client
+        client = boto3.client("bedrock-runtime", region_name="ca-central-1")
 
         # Model ID
         model_id = "anthropic.claude-3-haiku-20240307-v1:0"
@@ -44,7 +87,7 @@ def lambda_handler(event, context):
             "messages": [
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": user_prompt
                 }
             ]
         }
@@ -65,7 +108,7 @@ def lambda_handler(event, context):
 
         # Log successful invocation
         logger.info(
-            f"Successfully generated response for prompt: {prompt[:50]}...")
+            f"Successfully generated response for prompt: {user_prompt[:50]}...")
 
         # Return successful response
         return {
@@ -123,7 +166,7 @@ def lambda_handler(event, context):
         logger.error(f"Unexpected error: {str(e)}")
         return {
             'statusCode': 500,
-            'headers': cors_headers,  # Use consistent CORS headers
+            'headers': cors_headers,
             'body': json.dumps({
                 'success': False,
                 'error': 'InternalServerError',

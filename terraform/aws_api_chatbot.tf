@@ -84,7 +84,7 @@ resource "aws_api_gateway_integration" "integration_lambda_post_item" {
   http_method             = aws_api_gateway_method.method_post_item.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.lambda_function.invoke_arn
+  uri                     = aws_lambda_function.lambda_function_main.invoke_arn
 }
 
 # Method Response

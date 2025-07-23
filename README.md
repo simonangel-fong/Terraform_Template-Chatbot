@@ -9,3 +9,7 @@ An `Infrastructure as Code (IaC)` solution to build an AI chatbot using Terrafor
 - Deployment
 
 ![pic](./chatbot.png)
+
+```sh
+terraform init -backend-config=state.config --reconfigure
+```

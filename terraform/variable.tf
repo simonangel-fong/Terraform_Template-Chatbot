@@ -72,3 +72,7 @@ variable "aws_apigw_path" {
   type        = string
   default     = "chatbot"
 }
+
+variable "aws_bedrock_model" {
+  description = "Bedrock model id"
+}

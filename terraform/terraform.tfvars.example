@@ -2,6 +2,7 @@ app_domain = ""
 
 aws_region   = ""
 aws_cert_arn = ""
+aws_bedrock_model = ""
 
 cloudflare_api_token = ""
 cloudflare_zone_id   = ""

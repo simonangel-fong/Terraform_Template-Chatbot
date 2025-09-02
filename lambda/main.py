@@ -1,11 +1,19 @@
 import json
 import boto3
 import logging
+import uuid
 from botocore.exceptions import ClientError
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+BEDROCK_AGENT_ID = "0FQVFGEK9Y"
+BEDROCK_AGENT_ALIAS_ID = "QFK8DXRVQ3"
+REGION = "us-east-1"
+
+# Initialize Bedrock Agent Runtime client
+client = boto3.client("bedrock-agent-runtime", region_name=REGION)
 
 
 def lambda_handler(event, context):
@@ -73,53 +81,32 @@ def lambda_handler(event, context):
                 })
             }
 
-        # Initialize Bedrock client
-        client = boto3.client("bedrock-runtime", region_name="ca-central-1")
+        # unique session ID
+        session_id = str(uuid.uuid4())
 
-        # Model ID
-        model_id = "anthropic.claude-3-haiku-20240307-v1:0"
-
-        # Prepare request body using the Messages API format
-        request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4000,
-            "temperature": 0.7,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ]
-        }
-
-        # Invoke the model
-        response = client.invoke_model(
-            modelId=model_id,
-            contentType="application/json",
-            accept="application/json",
-            body=json.dumps(request_body)
+        # Invoke the agent
+        logger.info(f"Invoking Bedrock Agent with input: {user_prompt}")
+        response_stream = client.invoke_agent(
+            agentId=BEDROCK_AGENT_ID,
+            agentAliasId=BEDROCK_AGENT_ALIAS_ID,
+            sessionId=session_id,
+            inputText=user_prompt
         )
+        # Stream and collect agent responses
+        completion = ""
+        for event in response_stream.get("completion", []):
+            chunk = event["chunk"]
+            completion = completion + chunk["bytes"].decode()
 
-        # Parse response
-        response_body = json.loads(response['body'].read())
+        logger.info("Agent response generated successfully.")
 
-        # Extract the generated text
-        generated_text = response_body.get('content', [{}])[0].get('text', '')
-
-        # Log successful invocation
-        logger.info(
-            f"Successfully generated response for prompt: {user_prompt}...")
-
-        # Return successful response
         return {
             'statusCode': 200,
             'headers': cors_headers,
             'body': json.dumps({
                 'success': True,
-                'generated_text': generated_text,
-                'model_used': model_id,
-                'input_tokens': response_body.get('usage', {}).get('input_tokens', 0),
-                'output_tokens': response_body.get('usage', {}).get('output_tokens', 0)
+                'response_text': completion,
+                'session_id': session_id
             })
         }
 

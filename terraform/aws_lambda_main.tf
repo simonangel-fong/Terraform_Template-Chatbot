@@ -26,9 +26,8 @@ resource "aws_iam_role" "role_lambda_main" {
   }
 }
 
-
 # allow api to invoke lambda main
-resource "aws_lambda_permission" "permission_main_api_invoke_lambda" {
+resource "aws_lambda_permission" "permission_api_invoke_lambda_main" {
   statement_id  = "AllowExecutionFromAPIGatewayGET"
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
@@ -36,44 +35,37 @@ resource "aws_lambda_permission" "permission_main_api_invoke_lambda" {
   function_name = aws_lambda_function.lambda_function_main.id
 }
 
-# allow lambda main to invoke bedrock
-resource "aws_iam_role_policy" "policy_main_lambda_invoke_bedrock" {
-  name = "${var.app_name}-policy-lambda-main-invoke-bedrock"
+# allow lambda main to invoke bedrock agent
+resource "aws_iam_role_policy" "policy_lambda_invoke_bedrock_agent_main" {
+  name = "${var.app_name}-policy-lambda-invoke-bedrock-agent-main"
   role = aws_iam_role.role_lambda_main.name
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = [
-          "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
-        ],
-        Resource = "*" # Or specify specific model ARNs
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "bedrock:GetFoundationModel"
-        ],
+        Sid      = "InvokeBedrockAgentAlias",
+        Effect   = "Allow",
+        Action   = "bedrock:InvokeAgent",
         Resource = "*"
       }
     ]
   })
 }
 
+data "aws_caller_identity" "current" {}
+
 ###############################
 # Lambda Monitor: main
 ###############################
 # basic policy: Cloudwatch log group
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+resource "aws_iam_role_policy_attachment" "lambda_main_basic_execution" {
   role       = aws_iam_role.role_lambda_main.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# CloudWatch Log Group: mail
-resource "aws_cloudwatch_log_group" "lambda_logs" {
+# CloudWatch Log Group: main
+resource "aws_cloudwatch_log_group" "lambda_main_logs" {
   name              = "/aws/lambda/${aws_lambda_function.lambda_function_main.function_name}"
   retention_in_days = 14
 
@@ -82,8 +74,9 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
     Project     = var.app_name
     Environment = "prod"
   }
-}
 
+  depends_on = [aws_lambda_function.lambda_function_main]
+}
 
 ###############################
 # Lambda function: main
